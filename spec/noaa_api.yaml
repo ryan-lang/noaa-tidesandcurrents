@@ -1,0 +1,855 @@
+data_api:
+  products:
+    - product_id: water_level
+      name: WaterLevel
+      request: StandardRequest
+      response: WaterLevelResponse
+    - product_id: hourly_height
+      name: HourlyHeight
+      request: StandardRequest
+      response: HourlyHeightResponse
+      test_historical_range: true
+    - product_id: high_low
+      name: HighLow
+      request: StandardRequest
+      response: HighLowResponse
+      test_historical_range: true
+    - product_id: daily_mean
+      name: DailyMean
+      request: DailyMeanRequest
+      response: DailyMeanResponse
+      test_station: "9087077"
+      test_historical_range: true
+    - product_id: monthly_mean
+      name: MonthlyMean
+      request: StandardRequest
+      response: MonthlyMeanResponse
+      test_historical_range: true
+    - product_id: one_minute_water_level
+      name: WaterLevelHiRes
+      request: StandardRequest
+      response: WaterLevelResponse
+    - product_id: predictions
+      name: TidePredictions
+      request: TidePredictionsRequest
+      response: TidePredictionsResponse
+    - product_id: datums
+      name: Datums
+      request: DatumsRequest
+      response: DatumsResponse
+    - product_id: air_gap
+      name: AirGap
+      request: StandardRequest
+      response: AirGapResponse
+      test_station: "8575432"
+    - product_id: air_temperature
+      name: AirTemperature
+      request: StandardRequest
+      response: AirTemperatureResponse
+      test_station: "9445958" # Bremerton
+    - product_id: water_temperature
+      name: WaterTemperature
+      request: StandardRequest
+      response: WaterTemperatureResponse
+      test_station: "9444900" # Port Townsend
+    - product_id: wind
+      name: Wind
+      request: StandardRequest
+      response: WindResponse
+      test_station: "9445958" # Bremerton
+    - product_id: air_pressure
+      name: AirPressure
+      request: StandardRequest
+      response: AirPressureResponse
+      test_station: "9445958" # Bremerton
+    - product_id: conductivity
+      name: Conductivity
+      request: StandardRequest
+      response: ConductivityResponse
+      test_station: "8737048" # Mobile
+    - product_id: visibility
+      name: Visibility
+      request: StandardRequest
+      response: VisibilityResponse
+      test_station: "9414797" # Oakland
+    - product_id: humidity
+      name: Humidity
+      request: StandardRequest
+      response: HumidityResponse
+      test_station: "9099064" # Duluth
+    - product_id: salinity
+      name: Salinity
+      request: StandardRequest
+      response: SalinityResponse
+      test_station: "9410170" # Bremerton
+    - product_id: currents
+      name: Currents
+      request: CurrentsRequest
+      response: CurrentsResponse
+      test_station: "ks0101" # Rich Passage
+    - product_id: currents_predictions
+      name: CurrentsPredictions
+      request: CurrentsPredictionsRequest
+      response: CurrentsPredictionsResponse
+      test_station: "ks0101" # Rich Passage
+
+  model:
+    TidePredictionsRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Date:
+          type: DateParam
+          required: true
+        Datum:
+          type: string
+          required: true
+          default: MLLW
+        TimeZone:
+          type: string
+          required: true
+          default: GMT
+        Units:
+          type: string
+          required: true
+          default: Metric
+        Interval:
+          type: IntervalParam
+          default: INTERVAL_PARAM_6M
+          required: true
+    TidePredictionsResponse:
+      is_response: true
+      fields:
+        Predictions:
+          type: "[]TidePrediction"
+          required: true
+    TidePrediction:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Type:
+          json: ty
+          type: string
+    StandardRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Date:
+          type: DateParam
+          required: true
+        Datum:
+          type: string
+          required: true
+          default: MLLW
+        TimeZone:
+          type: string
+          required: true
+          default: GMT
+        Units:
+          type: string
+          required: true
+          default: Metric
+        Interval:
+          type: IntervalParam
+          default: INTERVAL_PARAM_1M
+          required: true
+    WaterLevelResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]WaterLevelData"
+          required: true
+    Metadata:
+      is_response: true
+      fields:
+        StationID:
+          json: id
+          type: string
+          required: true
+        StationName:
+          json: name
+          type: string
+          required: true
+        Latitude:
+          json: lat
+          json_type: string
+          type: float64
+          required: true
+        Longitude:
+          json: lon
+          json_type: string
+          type: float64
+          required: true
+    WaterLevelData:
+      is_response: true
+      custom_unmarshal: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Sigma:
+          json: s
+          json_type: string
+          type: float64
+        DataFlags:
+          json: f
+          type: WaterLevelDataFlags
+          required: true
+        QualityLevel:
+          json: q
+          type: QualityLevel
+          required: true
+    DailyMeanRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Date:
+          type: DateParam
+          required: true
+        Datum:
+          type: string
+          required: true
+          default: IGLD
+        TimeZone:
+          type: string
+          required: true
+          default: LST
+        Units:
+          type: string
+          required: true
+          default: Metric
+        Interval:
+          type: IntervalParam
+          default: INTERVAL_PARAM_6M
+          required: true
+    DatumsRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Units:
+          type: string
+          required: true
+          default: Metric
+    DatumsResponse:
+      is_response: true
+      fields:
+        Datums:
+          type: "[]Datum"
+          required: true
+    Datum:
+      is_response: true
+      fields:
+        Name:
+          json: n
+          type: string
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+    AirGapResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]AirGapData"
+          required: true
+    AirGapData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+        Sigma:
+          json: s
+          json_type: string
+          type: float64
+        DataFlags:
+          json: f
+          type: AirGapDataFlags
+    MonthlyMeanResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]MonthlyMeanData"
+          required: true
+    MonthlyMeanData:
+      is_response: true
+      fields:
+        Year:
+          json: year
+          type: string
+          required: true
+        Month:
+          json: month
+          type: string
+          required: true
+        Highest:
+          json: highest
+          json_type: string
+          type: float64
+          required: true
+        MHHW:
+          json: MHHW
+          json_type: string
+          type: float64
+          required: true
+        MHW:
+          json: MHW
+          json_type: string
+          type: float64
+          required: true
+        MSL:
+          json: MSL
+          json_type: string
+          type: float64
+          required: true
+        MTL:
+          json: MTL
+          json_type: string
+          type: float64
+          required: true
+        MLW:
+          json: MLW
+          json_type: string
+          type: float64
+          required: true
+        MLLW:
+          json: MLLW
+          json_type: string
+          type: float64
+          required: true
+        DTL:
+          json: DTL
+          json_type: string
+          type: float64
+          required: true
+        GT:
+          json: GT
+          json_type: string
+          type: float64
+          required: true
+        MN:
+          json: MN
+          json_type: string
+          type: float64
+          required: true
+        DHQ:
+          json: DHQ
+          json_type: string
+          type: float64
+          required: true
+        DLQ:
+          json: DLQ
+          json_type: string
+          type: float64
+          required: true
+        HWI:
+          json: HWI
+          json_type: string
+          type: float64
+          required: true
+        LWI:
+          json: LWI
+          json_type: string
+          type: float64
+          required: true
+        Lowest:
+          json: lowest
+          json_type: string
+          type: float64
+          required: true
+        Inferred:
+          json: inferred
+          json_type: string
+          type: bool
+          required: true
+    HourlyHeightResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]HourlyHeightData"
+          required: true
+    HourlyHeightData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Sigma:
+          json: s
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: HourlyHeightDataFlags
+          required: true
+    HighLowResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]HighLowData"
+          required: true
+    HighLowData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Type:
+          json: ty
+          type: string
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: HighLowDataFlags
+          required: true
+    DailyMeanResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]DailyMeanData"
+          required: true
+    DailyMeanData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: DailyMeanDataFlags
+          required: true
+    AirTemperatureResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]AirTemperatureData"
+          required: true
+    AirTemperatureData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: AirTemperatureDataFlags
+          required: true
+    WaterTemperatureResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]WaterTemperatureData"
+          required: true
+    WaterTemperatureData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: WaterTemperatureDataFlags
+          required: true
+    WindResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]WindData"
+          required: true
+    WindData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Direction:
+          json: d
+          json_type: string
+          type: float64
+          required: true
+        DirectionCardinal:
+          json: dr
+          type: string
+          required: true
+        Speed:
+          json: s
+          json_type: string
+          type: float64
+          required: true
+        Gust:
+          json: g
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: WindDataFlags
+          required: true
+    AirPressureResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]AirPressureData"
+          required: true
+    AirPressureData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: AirPressureDataFlags
+          required: true
+    ConductivityResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]ConductivityData"
+          required: true
+    ConductivityData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: ConductivityDataFlags
+          required: true
+    VisibilityResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]VisibilityData"
+          required: true
+    VisibilityData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+          required: true
+        Flags:
+          json: f
+          type: VisibilityDataFlags
+          required: true
+    HumidityResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]HumidityData"
+          required: true
+    HumidityData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Value:
+          json: v
+          json_type: string
+          type: float64
+        Flags:
+          json: f
+          type: HumidityDataFlags
+          required: true
+    SalinityResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]SalinityData"
+          required: true
+    SalinityData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Salinity:
+          json: s
+          json_type: string
+          type: float64
+          required: true
+    CurrentsRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Date:
+          type: DateParam
+          required: true
+        Datum:
+          type: string
+          required: true
+          default: MLLW
+        TimeZone:
+          type: string
+          required: true
+          default: GMT
+        Units:
+          type: string
+          required: true
+          default: Metric
+        Interval:
+          type: IntervalParam
+          default: INTERVAL_PARAM_6M
+          required: true
+        Bin:
+          type: string
+          required: true
+          default: "1"
+    CurrentsResponse:
+      is_response: true
+      fields:
+        Metadata:
+          type: Metadata
+          required: true
+        Data:
+          type: "[]CurrentsData"
+          required: true
+    CurrentsData:
+      is_response: true
+      fields:
+        Time:
+          json: t
+          json_type: string
+          type: time.Time
+          required: true
+        Speed:
+          json: s
+          json_type: string
+          type: float64
+          required: true
+        Direction:
+          json: d
+          json_type: string
+          type: float64
+          required: true
+        Bin:
+          json: b
+          type: string
+    CurrentsPredictionsRequest:
+      fields:
+        StationID:
+          type: string
+          url: station
+          required: true
+        Date:
+          type: DateParam
+          required: true
+        Datum:
+          type: string
+          required: true
+          default: MLLW
+        TimeZone:
+          type: string
+          required: true
+          default: GMT
+        Units:
+          type: string
+          required: true
+          default: Metric
+        Interval:
+          type: IntervalParam
+          default: INTERVAL_PARAM_6M
+          required: true
+        Bin:
+          type: string
+          required: true
+          default: "1"
+        VelocityType:
+          type: VelocityTypeParam
+          required: true
+          default: VELOCITY_TYPE_DEFAULT
+    CurrentsPredictionsResponse:
+      is_response: true
+      fields:
+        CurrentPredictions:
+          json: current_predictions
+          type: CurrentsPredictionsData
+          required: true
+    CurrentsPredictionsData:
+      is_response: true
+      fields:
+        Units:
+          type: string
+          required: true
+        Predictions:
+          json: cp
+          type: "[]CurrentPrediction"
+          required: true
+    CurrentPrediction:
+      is_response: true
+      fields:
+        Time:
+          json: Time
+          json_type: string
+          type: time.Time
+          required: true
+        VelocityMajor:
+          json: Velocity_Major
+          type: float64
+          required: true
+        MeanEbbDir:
+          json: meanEbbDir
+          type: float64
+          required: true
+        MeanFloodDir:
+          json: meanFloodDir
+          type: float64
+          required: true
+        Bin:
+          json: bin
+          type: string
+          required: true
+        Depth:
+          json: depth
+          json_type: string
+          type: float64
+          required: true
+        Speed:
+          json: speed
+          type: float64
+          required: true
+        Direction:
+          json: direction
+          type: float64
+          required: true
