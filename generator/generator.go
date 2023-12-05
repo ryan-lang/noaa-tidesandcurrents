@@ -15,6 +15,11 @@ func GenerateAll(def *ClientDefinition) error {
 		return err
 	}
 
+	err = GenerateMetadataApiClient(def.MetadataAPI)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

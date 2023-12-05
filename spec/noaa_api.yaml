@@ -853,3 +853,43 @@ data_api:
           json: direction
           type: float64
           required: true
+
+metadata_api:
+  station_resources:
+    - resource_id: metadata
+      name: Metadata
+      response: StationResponse
+    # - resource_id: harcon
+    #   name: HarmonicConstituents
+  model:
+    ResourceRef:
+      is_response:
+      fields:
+        Self:
+          type: string
+          json: self
+          required: true
+    StationResponse:
+      is_response: true
+      fields:
+        Count:
+          type: int
+          required: true
+        Units:
+          type: string
+        Stations:
+          type: "[]StationMetadata"
+          required: true
+    StationMetadata:
+      is_response: true
+      fields:
+        Tidal:
+          type: bool
+        GreatLakes:
+          type: bool
+          json: greatlakes
+        ShefCode:
+          type: string
+          json: shefcode
+        Details:
+          type: ResourceRef

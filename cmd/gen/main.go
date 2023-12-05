@@ -25,7 +25,7 @@ func main() {
 
 	log.Print("generating data api client")
 
-	err = generator.GenerateDataApiClient(def.DataAPI)
+	err = generator.GenerateAll(def)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to generate data api client"))
 	}

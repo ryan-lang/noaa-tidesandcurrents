@@ -9,12 +9,18 @@ import (
 
 type (
 	ClientDefinition struct {
-		DataAPI DataApiDefinition `yaml:"data_api"`
+		DataAPI     DataApiDefinition     `yaml:"data_api"`
+		MetadataAPI MetadataApiDefinition `yaml:"metadata_api"`
 	}
 
 	DataApiDefinition struct {
 		Products []ProductDefinition
 		Model    []ModelDefinition
+	}
+
+	MetadataApiDefinition struct {
+		Model            []ModelDefinition
+		StationResources []StationResourceDefinition
 	}
 
 	ProductDefinition struct {
@@ -41,6 +47,12 @@ type (
 		JsonType  string `yaml:"json_type"`
 		Required  bool   `yaml:"required"`
 		Default   string `yaml:"default"`
+	}
+
+	StationResourceDefinition struct {
+		ResourceID   string `yaml:"resource_id"`
+		Name         string `yaml:"name"`
+		ResponseType string `yaml:"response"`
 	}
 )
 
@@ -106,6 +118,30 @@ func (m *DataApiDefinition) UnmarshalYAML(node *yaml.Node) error {
 	})
 
 	m.Products = tmp.Products
+
+	return nil
+}
+
+func (m *MetadataApiDefinition) UnmarshalYAML(node *yaml.Node) error {
+	var tmp struct {
+		Model            map[string]ModelDefinition  `yaml:"model"`
+		StationResources []StationResourceDefinition `yaml:"station_resources"`
+	}
+	if err := node.Decode(&tmp); err != nil {
+		return err
+	}
+
+	for name, model := range tmp.Model {
+		model.Name = name
+		m.Model = append(m.Model, model)
+	}
+
+	// sort the models by name
+	sort.Slice(m.Model, func(i, j int) bool {
+		return m.Model[i].Name < m.Model[j].Name
+	})
+
+	m.StationResources = tmp.StationResources
 
 	return nil
 }

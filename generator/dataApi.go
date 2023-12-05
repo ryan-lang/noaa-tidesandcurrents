@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func GenerateDataApiClient(def DataApiDefinition) error {
 
-	err := GenerateDataApiModels(def.Model)
+	modelsPath := "./client/dataApi/model.gen.go"
+	err := GenerateModels(modelsPath, "dataApi", def.Model)
 	if err != nil {
 		return err
 	}
@@ -87,114 +87,6 @@ func GenerateDataApiProduct(productDef ProductDefinition) error {
 	// return the response
 	f.WriteString("\treturn &resp, nil\n")
 	f.WriteString("}\n\n")
-
-	return nil
-}
-
-func GenerateDataApiModels(models []ModelDefinition) error {
-
-	// open file for writing; overrite if exists
-	path := "./client/dataApi/model.gen.go"
-	_ = os.MkdirAll(filepath.Dir(path), 0700)
-	log.Printf("generating data api model file: %s", path)
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-
-	// write package
-	f.WriteString("package dataApi\n\n")
-
-	// write gen warning
-	f.WriteString("// THIS FILE IS GENERATED. DO NOT EDIT.\n\n")
-
-	// write imports
-	f.WriteString("import (\n")
-	f.WriteString("\t\"fmt\"\n")
-	f.WriteString("\t\"time\"\n")
-	f.WriteString("\t\"encoding/json\"\n")
-	f.WriteString("\t\"strconv\"\n")
-	f.WriteString(")\n\n")
-
-	// write the structs
-	for _, modelDef := range models {
-		f.WriteString(fmt.Sprintf("type %s struct {\n", modelDef.Name))
-		for _, fieldDef := range modelDef.Fields {
-
-			f.WriteString(fmt.Sprintf("\t%s ", fieldDef.Name))
-			if fieldDef.Required {
-				f.WriteString(fieldDef.Type)
-			} else {
-				f.WriteString(fmt.Sprintf("*%s ", fieldDef.Type))
-			}
-			if !modelDef.IsResponse {
-				f.WriteString(fmt.Sprintf(" `url:\"%s\"`", fieldDef.GetUrlParam()))
-			}
-			f.WriteString("\n")
-		}
-		f.WriteString("}\n\n")
-	}
-
-	// write the validators
-	for _, modelDef := range models {
-
-		// skip the response models
-		if modelDef.IsResponse {
-			continue
-		}
-
-		f.WriteString(fmt.Sprintf("func (m *%s) Validate() error {\n\n", modelDef.Name))
-		for _, fieldDef := range modelDef.Fields {
-
-			// special handling for certain types
-			if fieldDef.Type == "DateParam" || fieldDef.Type == "IntervalParam" || fieldDef.Type == "VelocityTypeParam" {
-				if fieldDef.Default != "" {
-					f.WriteString(fmt.Sprintf("\tif m.%s == \"\" {\n", fieldDef.Name))
-					f.WriteString(fmt.Sprintf("\t\tm.%s = %s\n", fieldDef.Name, fieldDef.Default))
-					f.WriteString("\t}\n\n")
-				}
-
-				if !fieldDef.Required {
-					f.WriteString(fmt.Sprintf("\tif m.%s != nil {\n", fieldDef.Name))
-				}
-				f.WriteString(fmt.Sprintf("\tif err := m.%s.Validate(); err != nil {\n", fieldDef.Name))
-				f.WriteString(fmt.Sprintf("\t\treturn fmt.Errorf(\"%s parameter is invalid: %%w\", err)\n", strings.ToLower(fieldDef.Name)))
-				f.WriteString("\t}\n\n")
-				if !fieldDef.Required {
-					f.WriteString("\t}\n\n")
-				}
-
-			} else if fieldDef.Default != "" {
-				f.WriteString(fmt.Sprintf("\tif m.%s == \"\" {\n", fieldDef.Name))
-				f.WriteString(fmt.Sprintf("\t\tm.%s = \"%s\"\n", fieldDef.Name, fieldDef.Default))
-				f.WriteString("\t}\n\n")
-			} else if fieldDef.Required {
-				f.WriteString(fmt.Sprintf("\tif m.%s == \"\" {\n", fieldDef.Name))
-				f.WriteString(fmt.Sprintf("\t\treturn fmt.Errorf(\"%s is required\")\n", strings.ToLower(fieldDef.Name)))
-				f.WriteString("\t}\n\n")
-			}
-		}
-		f.WriteString("\treturn nil\n")
-		f.WriteString("}\n\n")
-	}
-
-	// write the response unmarshallers
-	for _, modelDef := range models {
-
-		if !modelDef.IsResponse || modelDef.CustomUnmarshal {
-			continue
-		}
-
-		unmarshalFunc, _ := unmarshalFunc(modelDef)
-		f.WriteString(unmarshalFunc)
-		f.WriteString("\n")
-	}
-
-	// gofmt the file
-	err = goFmtFile(path)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -276,97 +168,4 @@ func GenerateDataApiTests(def DataApiDefinition) error {
 	}
 
 	return nil
-}
-
-func unmarshalFunc(modelDef ModelDefinition) (string, []string) {
-
-	var funcString string
-	var requiredImports []string
-
-	funcString += fmt.Sprintf("func (m *%s) UnmarshalJSON(b []byte) error {\n", modelDef.Name)
-	funcString += "\tvar tmp struct {\n"
-	for _, fieldDef := range modelDef.Fields {
-		var pointerStr string
-
-		if !fieldDef.Required {
-			pointerStr = "*"
-		}
-
-		funcString += fmt.Sprintf("\t\t%s %s%s `json:\"%s\"`\n", fieldDef.Name, pointerStr, fieldDef.GetJsonType(), fieldDef.GetJsonParam())
-	}
-	funcString += "\t}\n"
-	funcString += "\terr := json.Unmarshal(b, &tmp)\n"
-	funcString += "\tif err != nil {\n"
-	funcString += "\t\treturn err\n"
-	funcString += "\t}\n\n"
-	for _, fieldDef := range modelDef.Fields {
-
-		var deref string
-		if !fieldDef.Required {
-			funcString += fmt.Sprintf("\tif tmp.%s != nil {\n", fieldDef.Name)
-			deref = "*"
-		}
-
-		// do conversions from json type to go type ==
-		// string -> *pointer (no need to do other conversions after this one)
-		if !fieldDef.Required && fieldDef.GetJsonType() == "string" {
-			funcString += fmt.Sprintf("\t\tif *tmp.%s == \"\" {\n", fieldDef.Name)
-			funcString += fmt.Sprintf("\t\t\tm.%s = nil\n", fieldDef.Name)
-			funcString += "\t\t} else {\n"
-		}
-		// string -> time.Time
-		if fieldDef.Type == "time.Time" && fieldDef.GetJsonType() == "string" {
-			funcString += fmt.Sprintf("\t%sParsed, err := time.Parse(RESP_DATE_LAYOUT, %stmp.%s)\n", ToCamelCase(fieldDef.Name), deref, fieldDef.Name)
-			funcString += "\tif err != nil {\n"
-			funcString += fmt.Sprintf("\t\treturn fmt.Errorf(\"failed to parse %s: %%w\", err)\n", fieldDef.Name)
-			funcString += "\t}\n\n"
-		}
-		// string -> float64
-		if fieldDef.Type == "float64" && fieldDef.GetJsonType() == "string" {
-			funcString += fmt.Sprintf("\t%sParsed, err := strconv.ParseFloat(%stmp.%s, 64)\n", ToCamelCase(fieldDef.Name), deref, fieldDef.Name)
-			funcString += "\tif err != nil {\n"
-			funcString += fmt.Sprintf("\t\treturn fmt.Errorf(\"failed to parse %s: %%w\", err)\n", fieldDef.Name)
-			funcString += "\t}\n\n"
-		}
-		// string -> bool
-		if fieldDef.Type == "bool" && fieldDef.GetJsonType() == "string" {
-			funcString += fmt.Sprintf("\t%sParsed, err := strconv.ParseBool(%stmp.%s)\n", ToCamelCase(fieldDef.Name), deref, fieldDef.Name)
-			funcString += "\tif err != nil {\n"
-			funcString += fmt.Sprintf("\t\treturn fmt.Errorf(\"failed to parse %s: %%w\", err)\n", fieldDef.Name)
-			funcString += "\t}\n\n"
-		}
-
-		if !fieldDef.Required {
-
-			funcString += fmt.Sprintf("\tm.%s = ", fieldDef.Name)
-			if fieldDef.Type != fieldDef.GetJsonType() {
-				funcString += fmt.Sprintf("&%sParsed\n", ToCamelCase(fieldDef.Name))
-			} else {
-				funcString += fmt.Sprintf("tmp.%s\n", fieldDef.Name)
-			}
-
-			if !fieldDef.Required && fieldDef.GetJsonType() == "string" {
-				// close the if block
-				funcString += "\t\t}\n\n"
-			}
-
-			funcString += "\t}\n\n"
-		}
-	}
-
-	for _, fieldDef := range modelDef.Fields {
-		if fieldDef.Required {
-			funcString += fmt.Sprintf("\tm.%s = ", fieldDef.Name)
-			if fieldDef.Type != fieldDef.GetJsonType() {
-				funcString += fmt.Sprintf("%sParsed\n", ToCamelCase(fieldDef.Name))
-			} else {
-				funcString += fmt.Sprintf("tmp.%s\n", fieldDef.Name)
-			}
-		}
-	}
-
-	funcString += "\treturn nil\n"
-	funcString += "}\n\n"
-
-	return funcString, requiredImports
 }
