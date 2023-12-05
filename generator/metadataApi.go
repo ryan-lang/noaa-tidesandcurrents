@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func GenerateMetadataApiClient(def MetadataApiDefinition) error {
@@ -16,7 +17,7 @@ func GenerateMetadataApiClient(def MetadataApiDefinition) error {
 	}
 
 	for _, resourceDef := range def.StationResources {
-		err = GenerateMetadataApiStationResource(resourceDef)
+		err = GenerateMetadataApiStationResource(&resourceDef)
 		if err != nil {
 			return err
 		}
@@ -30,7 +31,7 @@ func GenerateMetadataApiClient(def MetadataApiDefinition) error {
 	return nil
 }
 
-func GenerateMetadataApiStationResource(resource StationResourceDefinition) error {
+func GenerateMetadataApiStationResource(resource *StationResourceDefinition) error {
 
 	// open file for writing; overrite if exists
 	path := fmt.Sprintf("./client/metadataApi/%s.gen.go", resource.ResourceID)
@@ -52,11 +53,35 @@ func GenerateMetadataApiStationResource(resource StationResourceDefinition) erro
 	f.WriteString("\t\"context\"\n")
 	f.WriteString("\t\"encoding/json\"\n")
 	f.WriteString("\t\"fmt\"\n")
+	f.WriteString("\t\"log\"\n")
 	f.WriteString("\t\"github.com/pkg/errors\"\n")
 	f.WriteString(")\n\n")
 
 	// write the method signature
 	f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context) (*%s, error) {\n\n", resource.Name, resource.ResponseType))
+
+	// check the fetched metadata to see if the resource is available
+	if len(resource.Availability) > 0 {
+		var availCheck []string
+		for _, avail := range resource.Availability {
+			availCheck = append(availCheck, fmt.Sprintf("stationType == \"%s\"", avail))
+		}
+		f.WriteString("\t// check the fetched metadata to see if the resource is available\n")
+		f.WriteString("\tif c.Metadata != nil {\n")
+		f.WriteString("\t\tvar isResourceAvailable bool\n")
+		f.WriteString("\t\tfor _, stationType := range c.Metadata.StationTypes() {\n")
+		f.WriteString(fmt.Sprintf("\t\t\tif %s {\n", strings.Join(availCheck, " || ")))
+		f.WriteString("\t\t\t\tisResourceAvailable = true\n")
+		f.WriteString("\t\t\t\tbreak\n")
+		f.WriteString("\t\t\t}\n")
+		f.WriteString("\t\t}\n")
+		f.WriteString("\t\tif !isResourceAvailable {\n")
+		f.WriteString(fmt.Sprintf("\t\t\tlog.Printf(\"fetched metadata incidicates %s is not available for station %%s\", c.StationID)\n", resource.Name))
+		f.WriteString("\t\t}\n")
+		f.WriteString("\t} else {\n")
+		f.WriteString(fmt.Sprintf("\t\tlog.Printf(\"availability of %s for station %%s is unknown. call FetchMetadata() first. trying anyway...\", c.StationID)\n", resource.Name))
+		f.WriteString("\t}\n\n")
+	}
 
 	// // build the params
 	// f.WriteString("\t// build the params\n")

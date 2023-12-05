@@ -11,13 +11,13 @@ import (
 	"testing"
 )
 
-func TestMetadata(t *testing.T) {
+func TestHarmonicConstituents(t *testing.T) {
 	c := metadataApi.NewClient(true, "test")
 	req := metadataApi.NewStationRequest(c, "9447130")
 	ctx := context.Background()
-	res, err := req.Metadata(ctx)
+	res, err := req.HarmonicConstituents(ctx)
 	assert.NoError(t, err)
 	jsonBytes, _ := json.MarshalIndent(res, "", "  ")
-	fmt.Printf("Metadata response: %s\n", jsonBytes)
+	fmt.Printf("HarmonicConstituents response: %s\n", jsonBytes)
 
 }

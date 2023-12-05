@@ -856,40 +856,44 @@ data_api:
 
 metadata_api:
   station_resources:
-    - resource_id: metadata
-      name: Metadata
-      response: StationResponse
-    # - resource_id: harcon
-    #   name: HarmonicConstituents
+    - resource_id: harcon
+      name: HarmonicConstituents
+      response: HarmonicConstituentsResponse
+      availability:
+        - STATION_TYPE_WATER_LEVEL
+        - STATION_TYPE_CURRENT
+        - STATION_TYPE_CURRENT_PREDICTION
   model:
-    ResourceRef:
-      is_response:
-      fields:
-        Self:
-          type: string
-          json: self
-          required: true
-    StationResponse:
+    HarmonicConstituentsResponse:
       is_response: true
       fields:
-        Count:
-          type: int
-          required: true
+        HarmonicConstituents:
+          type: "[]HarmonicConstituent"
+          json: "HarmonicConstituents"
         Units:
           type: string
-        Stations:
-          type: "[]StationMetadata"
           required: true
-    StationMetadata:
+    HarmonicConstituent:
       is_response: true
       fields:
-        Tidal:
-          type: bool
-        GreatLakes:
-          type: bool
-          json: greatlakes
-        ShefCode:
+        Number:
+          type: int64
+          required: true
+        Name:
           type: string
-          json: shefcode
-        Details:
-          type: ResourceRef
+          required: true
+        Description:
+          type: string
+          required: true
+        Amplitude:
+          type: float64
+          required: true
+        PhaseGMT:
+          type: float64
+          required: true
+        PhaseLocal:
+          type: float64
+          required: true
+        Speed:
+          type: float64
+          required: true

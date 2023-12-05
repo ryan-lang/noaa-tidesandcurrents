@@ -4,92 +4,62 @@ package metadataApi
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
-type ResourceRef struct {
-	Self string `url:"self"`
+type HarmonicConstituent struct {
+	Amplitude   float64
+	Description string
+	Name        string
+	Number      int64
+	PhaseGMT    float64
+	PhaseLocal  float64
+	Speed       float64
 }
 
-type StationMetadata struct {
-	Details    *ResourceRef
-	GreatLakes *bool
-	ShefCode   *string
-	Tidal      *bool
+type HarmonicConstituentsResponse struct {
+	HarmonicConstituents *[]HarmonicConstituent
+	Units                string
 }
 
-type StationResponse struct {
-	Count    int
-	Stations []StationMetadata
-	Units    *string
-}
-
-func (m *ResourceRef) Validate() error {
-
-	if m.Self == "" {
-		return fmt.Errorf("self is required")
-	}
-
-	return nil
-}
-
-func (m *StationMetadata) UnmarshalJSON(b []byte) error {
+func (m *HarmonicConstituent) UnmarshalJSON(b []byte) error {
 	var tmp struct {
-		Details    *ResourceRef `json:"details"`
-		GreatLakes *bool        `json:"greatlakes"`
-		ShefCode   *string      `json:"shefcode"`
-		Tidal      *bool        `json:"tidal"`
+		Amplitude   float64 `json:"amplitude"`
+		Description string  `json:"description"`
+		Name        string  `json:"name"`
+		Number      int64   `json:"number"`
+		PhaseGMT    float64 `json:"phase_gmt"`
+		PhaseLocal  float64 `json:"phase_local"`
+		Speed       float64 `json:"speed"`
 	}
 	err := json.Unmarshal(b, &tmp)
 	if err != nil {
 		return err
 	}
 
-	if tmp.Details != nil {
-		m.Details = tmp.Details
-	}
-
-	if tmp.GreatLakes != nil {
-		m.GreatLakes = tmp.GreatLakes
-	}
-
-	if tmp.ShefCode != nil {
-		if *tmp.ShefCode == "" {
-			m.ShefCode = nil
-		} else {
-			m.ShefCode = tmp.ShefCode
-		}
-
-	}
-
-	if tmp.Tidal != nil {
-		m.Tidal = tmp.Tidal
-	}
-
+	m.Amplitude = tmp.Amplitude
+	m.Description = tmp.Description
+	m.Name = tmp.Name
+	m.Number = tmp.Number
+	m.PhaseGMT = tmp.PhaseGMT
+	m.PhaseLocal = tmp.PhaseLocal
+	m.Speed = tmp.Speed
 	return nil
 }
 
-func (m *StationResponse) UnmarshalJSON(b []byte) error {
+func (m *HarmonicConstituentsResponse) UnmarshalJSON(b []byte) error {
 	var tmp struct {
-		Count    int               `json:"count"`
-		Stations []StationMetadata `json:"stations"`
-		Units    *string           `json:"units"`
+		HarmonicConstituents *[]HarmonicConstituent `json:"HarmonicConstituents"`
+		Units                string                 `json:"units"`
 	}
 	err := json.Unmarshal(b, &tmp)
 	if err != nil {
 		return err
 	}
 
-	if tmp.Units != nil {
-		if *tmp.Units == "" {
-			m.Units = nil
-		} else {
-			m.Units = tmp.Units
-		}
-
+	if tmp.HarmonicConstituents != nil {
+		m.HarmonicConstituents = tmp.HarmonicConstituents
 	}
 
-	m.Count = tmp.Count
-	m.Stations = tmp.Stations
+	m.Units = tmp.Units
 	return nil
 }

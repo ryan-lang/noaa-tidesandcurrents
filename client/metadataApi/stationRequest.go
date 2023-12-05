@@ -3,10 +3,12 @@ package metadataApi
 type (
 	StationRequest struct {
 		StationID string
+		Metadata  *StationMetadata
 		client    *Client
 	}
 	StationsRequest struct {
 		StationIDs []string
+		Metadata   *StationMetadata
 		client     *Client
 	}
 )
