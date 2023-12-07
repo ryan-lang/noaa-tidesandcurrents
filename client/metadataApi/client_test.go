@@ -15,7 +15,7 @@ func TestHarmonicConstituents(t *testing.T) {
 	c := metadataApi.NewClient(true, "test")
 	req := metadataApi.NewStationRequest(c, "9447130")
 	ctx := context.Background()
-	res, err := req.HarmonicConstituents(ctx)
+	res, err := req.HarmonicConstituents(ctx, &metadataApi.HarmonicConstituentsRequest{})
 	assert.NoError(t, err)
 	jsonBytes, _ := json.MarshalIndent(res, "", "  ")
 	fmt.Printf("HarmonicConstituents response: %s\n", jsonBytes)

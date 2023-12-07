@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/pkg/errors"
 )
@@ -24,10 +25,10 @@ func NewClient(verbose bool, appName string) *Client {
 	}
 }
 
-func (c *Client) httpGet(ctx context.Context, urlPath string) ([]byte, error) {
+func (c *Client) httpGet(ctx context.Context, urlPath string, params url.Values) ([]byte, error) {
 
 	// build the url
-	url := "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi" + urlPath
+	url := "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi" + urlPath + "?" + params.Encode()
 
 	// build the request
 	req, err := http.NewRequest("GET", url, nil)

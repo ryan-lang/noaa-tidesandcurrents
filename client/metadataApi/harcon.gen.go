@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"log"
 	"github.com/pkg/errors"
+	"github.com/google/go-querystring/query"
 )
 
-func (c *StationRequest) HarmonicConstituents(ctx context.Context) (*HarmonicConstituentsResponse, error) {
+func (c *StationRequest) HarmonicConstituents(ctx context.Context, req *HarmonicConstituentsRequest) (*HarmonicConstituentsResponse, error) {
 
 	// check the fetched metadata to see if the resource is available
 	if c.Metadata != nil {
@@ -25,11 +26,18 @@ func (c *StationRequest) HarmonicConstituents(ctx context.Context) (*HarmonicCon
 			log.Printf("fetched metadata incidicates HarmonicConstituents is not available for station %s", c.StationID)
 		}
 	} else {
-		log.Printf("availability of HarmonicConstituents for station %s is unknown. call FetchMetadata() first", c.StationID)
+		log.Printf("availability of HarmonicConstituents for station %s is unknown. call FetchMetadata() first. trying anyway...", c.StationID)
 	}
 
+	// validate the request
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	// build the params
+	params, _ := query.Values(req)
 	// make the request
-	respBody, err := c.client.httpGet(ctx, fmt.Sprintf("/stations/%s/harcon.json", c.StationID))
+	respBody, err := c.client.httpGet(ctx, fmt.Sprintf("/stations/%s/harcon.json", c.StationID), params)
 	if err != nil {
 		return nil, err
 	}

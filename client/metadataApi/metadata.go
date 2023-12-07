@@ -32,7 +32,7 @@ type StationResponse struct {
 func (c *StationRequest) FetchMetadata(ctx context.Context) (*StationResponse, error) {
 
 	// make the request
-	respBody, err := c.client.httpGet(ctx, fmt.Sprintf("/stations/%s.json", c.StationID))
+	respBody, err := c.client.httpGet(ctx, fmt.Sprintf("/stations/%s.json", c.StationID), nil)
 	if err != nil {
 		return nil, err
 	}

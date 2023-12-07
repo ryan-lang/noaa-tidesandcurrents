@@ -136,27 +136,26 @@ func (r *DateRange) Validate() error {
 	return nil
 }
 
-func (r *DateParamBeginAndEnd) AddToParams(params url.Values) {
-	params.Add("begin_date", r.BeginDate.Format(REQ_DATE_LAYOUT))
-	params.Add("end_date", r.EndDate.Format(REQ_DATE_LAYOUT))
+func (r *DateParamBeginAndEnd) EncodeValues(k string, v *url.Values) error {
+	v.Add("begin_date", r.BeginDate.Format(REQ_DATE_LAYOUT))
+	v.Add("end_date", r.EndDate.Format(REQ_DATE_LAYOUT))
+	return nil
 }
 
-func (r *DateParamBeginAndRange) AddToParams(params url.Values) {
-	params.Add("begin_date", r.BeginDate.Format(REQ_DATE_LAYOUT))
-	params.Add("range", fmt.Sprintf("%d", r.RangeHours))
+func (r *DateParamEndAndRange) EncodeValues(k string, v *url.Values) error {
+	v.Add("end_date", r.EndDate.Format(REQ_DATE_LAYOUT))
+	v.Add("range", fmt.Sprintf("%d", r.RangeHours))
+	return nil
 }
 
-func (r *DateParamEndAndRange) AddToParams(params url.Values) {
-	params.Add("end_date", r.EndDate.Format(REQ_DATE_LAYOUT))
-	params.Add("range", fmt.Sprintf("%d", r.RangeHours))
+func (r *DateRelative) EncodeValues(k string, v *url.Values) error {
+	v.Add("date", string(r.Relative))
+	return nil
 }
 
-func (r *DateRelative) AddToParams(params url.Values) {
-	params.Add("date", string(r.Relative))
-}
-
-func (r *DateRange) AddToParams(params url.Values) {
-	params.Add("range", fmt.Sprintf("%d", r.RangeHours))
+func (r *DateRange) EncodeValues(k string, v *url.Values) error {
+	v.Add("range", fmt.Sprintf("%d", r.RangeHours))
+	return nil
 }
 
 func (r *DateParamBeginAndRange) EncodeValues(k string, v *url.Values) error {

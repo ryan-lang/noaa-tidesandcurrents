@@ -858,18 +858,26 @@ metadata_api:
   station_resources:
     - resource_id: harcon
       name: HarmonicConstituents
+      request: HarmonicConstituentsRequest
       response: HarmonicConstituentsResponse
       availability:
         - STATION_TYPE_WATER_LEVEL
         - STATION_TYPE_CURRENT
         - STATION_TYPE_CURRENT_PREDICTION
   model:
+    HarmonicConstituentsRequest:
+      fields:
+        Units:
+          type: string
+          required: true
+          default: metric
     HarmonicConstituentsResponse:
       is_response: true
       fields:
         HarmonicConstituents:
           type: "[]HarmonicConstituent"
           json: "HarmonicConstituents"
+          required: true
         Units:
           type: string
           required: true

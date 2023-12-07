@@ -16,9 +16,22 @@ type HarmonicConstituent struct {
 	Speed       float64
 }
 
+type HarmonicConstituentsRequest struct {
+	Units string `url:"units"`
+}
+
 type HarmonicConstituentsResponse struct {
-	HarmonicConstituents *[]HarmonicConstituent
+	HarmonicConstituents []HarmonicConstituent
 	Units                string
+}
+
+func (m *HarmonicConstituentsRequest) Validate() error {
+
+	if m.Units == "" {
+		m.Units = "metric"
+	}
+
+	return nil
 }
 
 func (m *HarmonicConstituent) UnmarshalJSON(b []byte) error {
@@ -48,18 +61,15 @@ func (m *HarmonicConstituent) UnmarshalJSON(b []byte) error {
 
 func (m *HarmonicConstituentsResponse) UnmarshalJSON(b []byte) error {
 	var tmp struct {
-		HarmonicConstituents *[]HarmonicConstituent `json:"HarmonicConstituents"`
-		Units                string                 `json:"units"`
+		HarmonicConstituents []HarmonicConstituent `json:"HarmonicConstituents"`
+		Units                string                `json:"units"`
 	}
 	err := json.Unmarshal(b, &tmp)
 	if err != nil {
 		return err
 	}
 
-	if tmp.HarmonicConstituents != nil {
-		m.HarmonicConstituents = tmp.HarmonicConstituents
-	}
-
+	m.HarmonicConstituents = tmp.HarmonicConstituents
 	m.Units = tmp.Units
 	return nil
 }

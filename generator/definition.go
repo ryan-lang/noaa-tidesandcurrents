@@ -52,6 +52,7 @@ type (
 	StationResourceDefinition struct {
 		ResourceID   string   `yaml:"resource_id"`
 		Name         string   `yaml:"name"`
+		RequestType  string   `yaml:"request"`
 		ResponseType string   `yaml:"response"`
 		Availability []string `yaml:"availability"`
 	}

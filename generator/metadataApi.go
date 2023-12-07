@@ -55,10 +55,11 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 	f.WriteString("\t\"fmt\"\n")
 	f.WriteString("\t\"log\"\n")
 	f.WriteString("\t\"github.com/pkg/errors\"\n")
+	f.WriteString("\t\"github.com/google/go-querystring/query\"\n")
 	f.WriteString(")\n\n")
 
 	// write the method signature
-	f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context) (*%s, error) {\n\n", resource.Name, resource.ResponseType))
+	f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context, req *%s) (*%s, error) {\n\n", resource.Name, resource.RequestType, resource.ResponseType))
 
 	// check the fetched metadata to see if the resource is available
 	if len(resource.Availability) > 0 {
@@ -83,10 +84,15 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 		f.WriteString("\t}\n\n")
 	}
 
-	// // build the params
-	// f.WriteString("\t// build the params\n")
-	// f.WriteString("\tparams, _ := query.Values(req)\n")
-	// f.WriteString("\tparams.Add(\"product\", \"" + resource.ResourceID + "\")\n\n")
+	// validate the request
+	f.WriteString("\t// validate the request\n")
+	f.WriteString("\tif err := req.Validate(); err != nil {\n")
+	f.WriteString("\t\treturn nil, err\n")
+	f.WriteString("\t}\n\n")
+
+	// build the params
+	f.WriteString("\t// build the params\n")
+	f.WriteString("\tparams, _ := query.Values(req)\n")
 
 	var urlPath string
 	if resource.ResourceID == "metadata" {
@@ -97,7 +103,7 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 
 	// make the request
 	f.WriteString("\t// make the request\n")
-	f.WriteString(fmt.Sprintf("\trespBody, err := c.client.httpGet(ctx, fmt.Sprintf(\"%s\", c.StationID))\n", urlPath))
+	f.WriteString(fmt.Sprintf("\trespBody, err := c.client.httpGet(ctx, fmt.Sprintf(\"%s\", c.StationID), params)\n", urlPath))
 	f.WriteString("\tif err != nil {\n")
 	f.WriteString("\t\treturn nil, err\n")
 	f.WriteString("\t}\n\n")
@@ -159,7 +165,7 @@ func GenerateMetadataApiTests(def MetadataApiDefinition) error {
 		f.WriteString("\tctx := context.Background()\n")
 
 		// execute the request
-		f.WriteString(fmt.Sprintf("\tres, err := req.%s(ctx)\n", resourceDef.Name))
+		f.WriteString(fmt.Sprintf("\tres, err := req.%s(ctx, &metadataApi.%s{})\n", resourceDef.Name, resourceDef.RequestType))
 		f.WriteString("\tassert.NoError(t, err)\n")
 
 		// write the response to json and print it
