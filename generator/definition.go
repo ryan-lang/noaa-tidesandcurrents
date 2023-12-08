@@ -55,6 +55,7 @@ type (
 		RequestType  string   `yaml:"request"`
 		ResponseType string   `yaml:"response"`
 		Availability []string `yaml:"availability"`
+		TestStation  string   `yaml:"test_station"`
 	}
 )
 

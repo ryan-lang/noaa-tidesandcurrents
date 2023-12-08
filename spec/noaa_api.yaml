@@ -864,6 +864,12 @@ metadata_api:
         - STATION_TYPE_WATER_LEVEL
         - STATION_TYPE_CURRENT
         - STATION_TYPE_CURRENT_PREDICTION
+    - resource_id: tidepredoffsets
+      name: TidePredictionOffsets
+      response: TidePredictionOffsetsResponse
+      availability:
+        - STATION_TYPE_WATER_LEVEL
+      test_station: 9445719 # Poulsbo
   model:
     HarmonicConstituentsRequest:
       fields:
@@ -905,3 +911,33 @@ metadata_api:
         Speed:
           type: float64
           required: true
+    TidePredictionOffsetsResponse:
+      is_response: true
+      fields:
+        RefStationID:
+          type: string
+          required: true
+          json: "refStationId"
+        Type:
+          type: string
+          required: true
+        HeightOffsetHighTide:
+          type: float64
+          required: true
+          json: "heightOffsetHighTide"
+        HeightOffsetLowTide:
+          type: float64
+          required: true
+          json: "heightOffsetLowTide"
+        TimeOffsetHighTide:
+          type: float64
+          required: true
+          json: "timeOffsetHighTide"
+        TimeOffsetLowTide:
+          type: float64
+          required: true
+          json: "timeOffsetLowTide"
+        HeightAdjustedType:
+          type: string
+          required: true
+          json: "heightAdjustedType"

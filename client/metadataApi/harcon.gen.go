@@ -26,7 +26,9 @@ func (c *StationRequest) HarmonicConstituents(ctx context.Context, req *Harmonic
 			log.Printf("fetched metadata incidicates HarmonicConstituents is not available for station %s", c.StationID)
 		}
 	} else {
-		log.Printf("availability of HarmonicConstituents for station %s is unknown. call FetchMetadata() first. trying anyway...", c.StationID)
+		if c.client.Verbose {
+			log.Printf("availability of HarmonicConstituents for station %s is unknown. call FetchMetadata() first. trying anyway...", c.StationID)
+		}
 	}
 
 	// validate the request

@@ -21,3 +21,14 @@ func TestHarmonicConstituents(t *testing.T) {
 	fmt.Printf("HarmonicConstituents response: %s\n", jsonBytes)
 
 }
+
+func TestTidePredictionOffsets(t *testing.T) {
+	c := metadataApi.NewClient(true, "test")
+	req := metadataApi.NewStationRequest(c, "9445719")
+	ctx := context.Background()
+	res, err := req.TidePredictionOffsets(ctx)
+	assert.NoError(t, err)
+	jsonBytes, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Printf("TidePredictionOffsets response: %s\n", jsonBytes)
+
+}

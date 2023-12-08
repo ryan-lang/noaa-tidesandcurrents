@@ -55,11 +55,17 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 	f.WriteString("\t\"fmt\"\n")
 	f.WriteString("\t\"log\"\n")
 	f.WriteString("\t\"github.com/pkg/errors\"\n")
-	f.WriteString("\t\"github.com/google/go-querystring/query\"\n")
+	if resource.RequestType != "" {
+		f.WriteString("\t\"github.com/google/go-querystring/query\"\n")
+	}
 	f.WriteString(")\n\n")
 
 	// write the method signature
-	f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context, req *%s) (*%s, error) {\n\n", resource.Name, resource.RequestType, resource.ResponseType))
+	if resource.RequestType != "" {
+		f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context, req *%s) (*%s, error) {\n\n", resource.Name, resource.RequestType, resource.ResponseType))
+	} else {
+		f.WriteString(fmt.Sprintf("func (c *StationRequest) %s(ctx context.Context) (*%s, error) {\n\n", resource.Name, resource.ResponseType))
+	}
 
 	// check the fetched metadata to see if the resource is available
 	if len(resource.Availability) > 0 {
@@ -80,19 +86,23 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 		f.WriteString(fmt.Sprintf("\t\t\tlog.Printf(\"fetched metadata incidicates %s is not available for station %%s\", c.StationID)\n", resource.Name))
 		f.WriteString("\t\t}\n")
 		f.WriteString("\t} else {\n")
-		f.WriteString(fmt.Sprintf("\t\tlog.Printf(\"availability of %s for station %%s is unknown. call FetchMetadata() first. trying anyway...\", c.StationID)\n", resource.Name))
+		f.WriteString("\t\tif c.client.Verbose {\n")
+		f.WriteString(fmt.Sprintf("\t\t\tlog.Printf(\"availability of %s for station %%s is unknown. call FetchMetadata() first. trying anyway...\", c.StationID)\n", resource.Name))
+		f.WriteString("\t\t}\n")
 		f.WriteString("\t}\n\n")
 	}
 
 	// validate the request
-	f.WriteString("\t// validate the request\n")
-	f.WriteString("\tif err := req.Validate(); err != nil {\n")
-	f.WriteString("\t\treturn nil, err\n")
-	f.WriteString("\t}\n\n")
+	if resource.RequestType != "" {
+		f.WriteString("\t// validate the request\n")
+		f.WriteString("\tif err := req.Validate(); err != nil {\n")
+		f.WriteString("\t\treturn nil, err\n")
+		f.WriteString("\t}\n\n")
 
-	// build the params
-	f.WriteString("\t// build the params\n")
-	f.WriteString("\tparams, _ := query.Values(req)\n")
+		// build the params
+		f.WriteString("\t// build the params\n")
+		f.WriteString("\tparams, _ := query.Values(req)\n")
+	}
 
 	var urlPath string
 	if resource.ResourceID == "metadata" {
@@ -103,7 +113,11 @@ func GenerateMetadataApiStationResource(resource *StationResourceDefinition) err
 
 	// make the request
 	f.WriteString("\t// make the request\n")
-	f.WriteString(fmt.Sprintf("\trespBody, err := c.client.httpGet(ctx, fmt.Sprintf(\"%s\", c.StationID), params)\n", urlPath))
+	if resource.RequestType != "" {
+		f.WriteString(fmt.Sprintf("\trespBody, err := c.client.httpGet(ctx, fmt.Sprintf(\"%s\", c.StationID), params)\n", urlPath))
+	} else {
+		f.WriteString(fmt.Sprintf("\trespBody, err := c.client.httpGet(ctx, fmt.Sprintf(\"%s\", c.StationID), nil)\n", urlPath))
+	}
 	f.WriteString("\tif err != nil {\n")
 	f.WriteString("\t\treturn nil, err\n")
 	f.WriteString("\t}\n\n")
@@ -161,11 +175,18 @@ func GenerateMetadataApiTests(def MetadataApiDefinition) error {
 	for _, resourceDef := range def.StationResources {
 		f.WriteString(fmt.Sprintf("func Test%s(t *testing.T) {\n", resourceDef.Name))
 		f.WriteString("\tc := metadataApi.NewClient(true, \"test\")\n")
-		f.WriteString("\treq := metadataApi.NewStationRequest(c, \"9447130\")\n")
+		if resourceDef.TestStation == "" {
+			resourceDef.TestStation = "9447130"
+		}
+		f.WriteString(fmt.Sprintf("\treq := metadataApi.NewStationRequest(c, \"%s\")\n", resourceDef.TestStation))
 		f.WriteString("\tctx := context.Background()\n")
 
 		// execute the request
-		f.WriteString(fmt.Sprintf("\tres, err := req.%s(ctx, &metadataApi.%s{})\n", resourceDef.Name, resourceDef.RequestType))
+		if resourceDef.RequestType != "" {
+			f.WriteString(fmt.Sprintf("\tres, err := req.%s(ctx, &metadataApi.%s{})\n", resourceDef.Name, resourceDef.RequestType))
+		} else {
+			f.WriteString(fmt.Sprintf("\tres, err := req.%s(ctx)\n", resourceDef.Name))
+		}
 		f.WriteString("\tassert.NoError(t, err)\n")
 
 		// write the response to json and print it
