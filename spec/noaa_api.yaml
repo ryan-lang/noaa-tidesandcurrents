@@ -139,7 +139,7 @@ data_api:
           type: float64
           required: true
         Type:
-          json: ty
+          json: type
           type: string
     StandardRequest:
       fields:

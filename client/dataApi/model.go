@@ -74,6 +74,9 @@ type (
 )
 
 func (r *DateParamBeginAndEnd) Validate() error {
+	if r == nil {
+		return fmt.Errorf("date param is required")
+	}
 	if r.BeginDate.IsZero() {
 		return fmt.Errorf("begin date is required")
 	}
@@ -90,6 +93,9 @@ func (r *DateParamBeginAndEnd) Validate() error {
 }
 
 func (r *DateParamBeginAndRange) Validate() error {
+	if r == nil {
+		return fmt.Errorf("date param is required")
+	}
 	if r.BeginDate.IsZero() {
 		return fmt.Errorf("begin date is required")
 	}
@@ -103,6 +109,9 @@ func (r *DateParamBeginAndRange) Validate() error {
 }
 
 func (r *DateParamEndAndRange) Validate() error {
+	if r == nil {
+		return fmt.Errorf("date param is required")
+	}
 	if r.EndDate.IsZero() {
 		return fmt.Errorf("end date is required")
 	}
@@ -115,6 +124,9 @@ func (r *DateParamEndAndRange) Validate() error {
 }
 
 func (r *DateRelative) Validate() error {
+	if r == nil {
+		return fmt.Errorf("date param is required")
+	}
 	if r.Relative == "" {
 		return fmt.Errorf("relative date option is required")
 	}
@@ -165,11 +177,17 @@ func (r *DateParamBeginAndRange) EncodeValues(k string, v *url.Values) error {
 }
 
 func (i IntervalParam) Validate() error {
+	if i == "" {
+		return fmt.Errorf("interval is required")
+	}
 	// TODO: make sure its one of our known intervals
 	return nil
 }
 
 func (v VelocityTypeParam) Validate() error {
+	if v == "" {
+		return fmt.Errorf("velocity type is required")
+	}
 	// TODO: make sure its one of our known velocity types
 	return nil
 }

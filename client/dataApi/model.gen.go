@@ -302,8 +302,13 @@ func (m *CurrentsPredictionsRequest) Validate() error {
 		m.Bin = "1"
 	}
 
-	if err := m.Date.Validate(); err != nil {
-		return fmt.Errorf("date parameter is invalid: %w", err)
+	if m.Date != nil {
+		if err := m.Date.Validate(); err != nil {
+			return fmt.Errorf("date parameter is invalid: %w", err)
+		}
+
+	} else {
+		return fmt.Errorf("date parameter is required")
 	}
 
 	if m.Datum == "" {
@@ -347,8 +352,13 @@ func (m *CurrentsRequest) Validate() error {
 		m.Bin = "1"
 	}
 
-	if err := m.Date.Validate(); err != nil {
-		return fmt.Errorf("date parameter is invalid: %w", err)
+	if m.Date != nil {
+		if err := m.Date.Validate(); err != nil {
+			return fmt.Errorf("date parameter is invalid: %w", err)
+		}
+
+	} else {
+		return fmt.Errorf("date parameter is required")
 	}
 
 	if m.Datum == "" {
@@ -380,8 +390,13 @@ func (m *CurrentsRequest) Validate() error {
 
 func (m *DailyMeanRequest) Validate() error {
 
-	if err := m.Date.Validate(); err != nil {
-		return fmt.Errorf("date parameter is invalid: %w", err)
+	if m.Date != nil {
+		if err := m.Date.Validate(); err != nil {
+			return fmt.Errorf("date parameter is invalid: %w", err)
+		}
+
+	} else {
+		return fmt.Errorf("date parameter is required")
 	}
 
 	if m.Datum == "" {
@@ -426,8 +441,13 @@ func (m *DatumsRequest) Validate() error {
 
 func (m *StandardRequest) Validate() error {
 
-	if err := m.Date.Validate(); err != nil {
-		return fmt.Errorf("date parameter is invalid: %w", err)
+	if m.Date != nil {
+		if err := m.Date.Validate(); err != nil {
+			return fmt.Errorf("date parameter is invalid: %w", err)
+		}
+
+	} else {
+		return fmt.Errorf("date parameter is required")
 	}
 
 	if m.Datum == "" {
@@ -459,8 +479,13 @@ func (m *StandardRequest) Validate() error {
 
 func (m *TidePredictionsRequest) Validate() error {
 
-	if err := m.Date.Validate(); err != nil {
-		return fmt.Errorf("date parameter is invalid: %w", err)
+	if m.Date != nil {
+		if err := m.Date.Validate(); err != nil {
+			return fmt.Errorf("date parameter is invalid: %w", err)
+		}
+
+	} else {
+		return fmt.Errorf("date parameter is required")
 	}
 
 	if m.Datum == "" {
@@ -1238,7 +1263,7 @@ func (m *SalinityResponse) UnmarshalJSON(b []byte) error {
 func (m *TidePrediction) UnmarshalJSON(b []byte) error {
 	var tmp struct {
 		Time  string  `json:"t"`
-		Type  *string `json:"ty"`
+		Type  *string `json:"type"`
 		Value string  `json:"v"`
 	}
 	err := json.Unmarshal(b, &tmp)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 )
@@ -33,6 +34,10 @@ func ToUpperCamelCase(s string) string {
 
 func ToSnakeCase(s string) string {
 	return strcase.ToSnake(s)
+}
+
+func ToKebabCase(s string) string {
+	return strings.ToLower(strcase.ToKebab(s))
 }
 
 func goFmtFile(filename string) error {

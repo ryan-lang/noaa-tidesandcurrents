@@ -141,13 +141,17 @@ func validatorFunc(modelDef ModelDefinition) (string, map[string]bool) {
 				funcString += "\t}\n\n"
 			}
 
-			if !fieldDef.Required {
+			if !fieldDef.Required || fieldDef.Type == "DateParam" {
 				funcString += fmt.Sprintf("\tif m.%s != nil {\n", fieldDef.Name)
 			}
 			funcString += fmt.Sprintf("\tif err := m.%s.Validate(); err != nil {\n", fieldDef.Name)
 			funcString += fmt.Sprintf("\t\treturn fmt.Errorf(\"%s parameter is invalid: %%w\", err)\n", strings.ToLower(fieldDef.Name))
 			funcString += "\t}\n\n"
-			if !fieldDef.Required {
+			if !fieldDef.Required && fieldDef.Type != "DateParam" {
+				funcString += "\t}\n\n"
+			} else if fieldDef.Type == "DateParam" {
+				funcString += "\t} else {\n"
+				funcString += fmt.Sprintf("\t\treturn fmt.Errorf(\"%s parameter is required\")\n", strings.ToLower(fieldDef.Name))
 				funcString += "\t}\n\n"
 			}
 
