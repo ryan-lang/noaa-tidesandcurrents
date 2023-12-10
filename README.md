@@ -7,9 +7,9 @@ The bulk of the code is generated from yaml files found in the `./spec` director
 ## CLI
 
 ```bash
-go install github.com/ryan-lang/noaa-tidesandcurrents
+go install github.com/ryan-lang/noaa-tidesandcurrents/cmd/noaatc@latest
 
-noaatc getData predictions --station-id 9447130 --begin yesterday --hours 24 --interval 60 --units feet
+noaatc getData predictions --station-id 9447130 --begin yesterday --hours 24 --interval 60 --units english
 
 noaatc getMetadata harcon --station-id 9447130
 ```
