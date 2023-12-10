@@ -188,3 +188,12 @@ func (d *DataApiDefinition) GetModel(name string) ModelDefinition {
 	}
 	return ModelDefinition{}
 }
+
+func (d *MetadataApiDefinition) GetModel(name string) ModelDefinition {
+	for _, model := range d.Model {
+		if model.Name == name {
+			return model
+		}
+	}
+	return ModelDefinition{}
+}
