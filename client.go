@@ -1,3 +1,9 @@
+// Provides a thin wrapper around the public NOAA Tides & Currents APIs.
+// The two supported APIs are:
+//
+// Data API: https://api.tidesandcurrents.noaa.gov/api/prod/
+//
+// Metadata API: https://api.tidesandcurrents.noaa.gov/mdapi/prod/
 package noaatidesandcurrents
 
 import (
